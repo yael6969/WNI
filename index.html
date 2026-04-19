@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pencatatan Cuaca - Export to Canva</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; background-color: #f4f4f9; }
+        .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        
+        #table-area { padding: 15px; background: white; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background-color: white; }
+        table, th, td { border: 1px solid #000; }
+        
+        /* Gaya Header Hijau Persis Gambar */
+        th { background-color: #e2efda !important; font-weight: bold; padding: 10px; font-size: 13px; color: #000; }
+        td { padding: 8px; text-align: center; height: 35px; font-size: 13px; color: #000; }
+        
+        /* Gaya Form Input */
+        .input-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 20px; }
+        label { display: block; font-size: 11px; margin-bottom: 5px; font-weight: bold; color: #333; text-transform: uppercase; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 13px; }
+        
+        button { padding: 12px 20px; cursor: pointer; border-radius: 4px; border: none; font-weight: bold; transition: 0.3s; }
+        .btn-add { background-color: #4CAF50; color: white; width: 100%; margin-bottom: 10px; }
+        .btn-add:hover { background-color: #45a049; }
+        
+        .btn-download { background-color: #007bff; color: white; margin-top: 20px; width: 100%; font-size: 16px; display: block; }
+        .btn-download:hover { background-color: #0056b3; }
+        .btn-download:disabled { background-color: #ccc; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Form Input Data Cuaca</h2>
+    <div class="input-group">
+        <div>
+            <label>Hari Tanggal</label>
+            <input type="date" id="tanggal">
+        </div>
+        <div>
+            <label>Waktu</label>
+            <select id="waktu">
+                <option value="Pagi">Pagi</option>
+                <option value="Siang">Siang</option>
+                <option value="Sore">Sore</option>
+                <option value="Malam">Malam</option>
+            </select>
+        </div>
+        <div>
+            <label>Suhu (°C)</label>
+            <input type="number" id="suhu" placeholder="30">
+        </div>
+        <div>
+            <label>Curah Hujan</label>
+            <select id="hujan">
+                <option value="Ada">Ada</option>
+                <option value="Tidak">Tidak</option>
+            </select>
+        </div>
+        <div>
+            <label>Lembab (%)</label>
+            <input type="number" id="lembab" placeholder="80">
+        </div>
+        <div>
+            <label>Kec. Angin (km/j)</label>
+            <input type="number" id="kecAngin" placeholder="15">
+        </div>
+        <div>
+            <label>Arah Angin</label>
+            <select id="arahAngin">
+                <option value="Utara">Utara</option>
+                <option value="Timur Laut">Timur Laut</option>
+                <option value="Timur">Timur</option>
+                <option value="Tenggara">Tenggara</option>
+                <option value="Selatan">Selatan</option>
+                <option value="Barat Daya">Barat Daya</option>
+                <option value="Barat">Barat</option>
+                <option value="Barat Laut">Barat Laut</option>
+            </select>
+        </div>
+    </div>
+    
+    <button class="btn-add" onclick="tambahData()">+ Tambah Baris ke Tabel</button>
+
+    <div id="table-area">
+        <table id="tabelCuaca">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">No</th>
+                    <th style="width: 15%;">Hari Tanggal</th>
+                    <th style="width: 15%;">Waktu</th> <th style="width: 10%;">Suhu Udara</th>
+                    <th style="width: 15%;">Curah Hujan</th>
+                    <th style="width: 12%;">Kelembaban</th>
+                    <th>Angin (Kec/Arah)</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+
+    <button id="downloadBtn" class="btn-download" onclick="exportToPDF()">Download PDF (Siap Buka di Canva)</button>
+</div>
+
+<script>
+    let counter = 1;
+
+    function tambahData() {
+        const tanggal = document.getElementById("tanggal").value;
+        const waktu = document.getElementById("waktu").value;
+        const suhu = document.getElementById("suhu").value;
+        const hujan = document.getElementById("hujan").value;
+        const lembab = document.getElementById("lembab").value;
+        const kecAngin = document.getElementById("kecAngin").value;
+        const arahAngin = document.getElementById("arahAngin").value;
+
+        if(!tanggal || !suhu || !lembab || !kecAngin) {
+            alert("Harap isi semua data!");
+            return;
+        }
+
+        const table = document.getElementById("tabelCuaca").getElementsByTagName('tbody')[0];
+        const row = table.insertRow();
+
+        row.insertCell(0).innerHTML = counter++;
+        row.insertCell(1).innerHTML = tanggal;
+        row.insertCell(2).innerHTML = waktu;
+        row.insertCell(3).innerHTML = suhu + "°C";
+        row.insertCell(4).innerHTML = hujan;
+        row.insertCell(5).innerHTML = lembab + "%";
+        row.insertCell(6).innerHTML = kecAngin + " km/j - " + arahAngin;
+
+        document.getElementById("suhu").value = "";
+        document.getElementById("lembab").value = "";
+        document.getElementById("kecAngin").value = "";
+    }
+
+    async function exportToPDF() {
+        const element = document.getElementById('table-area');
+        const btn = document.getElementById('downloadBtn');
+
+        if (document.getElementById("tabelCuaca").rows.length <= 1) {
+            alert("Tabel masih kosong!");
+            return;
+        }
+
+        if (typeof html2pdf === 'undefined') {
+            alert("Library PDF gagal dimuat!");
+            return;
+        }
+
+        btn.innerText = "Memproses...";
+        btn.disabled = true;
+
+        const opt = {
+            margin:       0.3,
+            filename:     'Data_Cuaca_Canva.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 3, useCORS: true },
+            jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
+        };
+
+        try {
+            await html2pdf().set(opt).from(element).save();
+        } catch (error) {
+            alert("Error: " + error.message);
+        } finally {
+            btn.innerText = "Download PDF (Siap Buka di Canva)";
+            btn.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>
